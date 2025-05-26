@@ -1,0 +1,1 @@
+# Homebridge FossiBot Integration plugin
