@@ -1,4 +1,4 @@
-const Connector = require('./lib/connector').Connector;
+const Connector = require('../lib/connector').Connector;
 
 export class FossibotController {
     private connector: typeof Connector.prototype;

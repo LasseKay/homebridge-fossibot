@@ -1,8 +1,8 @@
 import type {CharacteristicValue, PlatformAccessory, Service} from 'homebridge';
 import type {FossibotHomebridgePlatform} from './platform.js';
-import type {FossibotController as FossibotControllerType} from './fossibotController';
+import type {FossibotController as FossibotControllerType} from './controller/fossibotController';
 
-const { FossibotController } = require('./fossibotController');
+const { FossibotController } = require('./controller/fossibotController');
 
 export class FossibotPlatformAccessory {
   private service: Service;
