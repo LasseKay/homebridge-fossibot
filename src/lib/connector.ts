@@ -23,8 +23,8 @@ const API_DOLOGIN = 'api-dolog';
 const API_MQTT = 'api-mqtt';
 const API_DEVICES = 'api-devs';
 const mqttHost = 'ws://mqtt.sydpower.com:8083/mqtt';
-let _username = ''
-let _password = ''
+let _username = '';
+let _password = '';
 
 export class Connector {
     private username = '';
@@ -34,9 +34,9 @@ export class Connector {
 
     constructor(username: string, password: string) {
         this.username = username;
-        _username = username
-        this.password = password
-        _password = password
+        _username = username;
+        this.password = password;
+        _password = password;
     }
 
     private async api(config: any): Promise<any> {
@@ -140,9 +140,15 @@ export class Connector {
         const log = (...args: any[]) => DEBUG && console.debug('[CONNECT]', ...args);
         try {
             const auth = await this.api({ route: API_AUTH });
-            if (!auth?.data?.accessToken) throw new Error(`AUTH failed: ${auth.error || 'No response'}`);
+            if (!auth?.data?.accessToken) {
+                console.error(`AUTH failed: ${auth?.error || 'No response'}`);
+                return;
+            }
             const authorizeToken = auth.data?.accessToken;
-            if (!authorizeToken) throw new Error('No access token from AUTH');
+            if (!authorizeToken) {
+                console.error('No access token from AUTH');
+                return;
+            }
             log('Step 1: AUTH success');
             const login = await this.api({
                 route: API_LOGIN,
@@ -150,27 +156,45 @@ export class Connector {
                 username: this.username,
                 password: this.password,
             });
-            if (!login?.data?.token) throw new Error(`LOGIN failed: ${login.data.errMsg || login.data.msg || 'No response'}`);
+            if (!login?.data?.token) {
+                console.error(`LOGIN failed: ${login.data?.errMsg || login.data?.msg || 'No response'}`);
+                return;
+            }
             const accessToken = login.data?.token;
-            if (!accessToken) throw new Error('No token from LOGIN');
+            if (!accessToken) {
+                console.error('No token from LOGIN');
+                return;
+            }
             log('Step 2: LOGIN success');
             const mqttAccess = await this.api({
                 route: API_MQTT,
                 authorizeToken,
                 accessToken,
             });
-            if (!mqttAccess || mqttAccess.error) throw new Error(`MQTT auth failed: ${mqttAccess.error || 'No response'}`);
+            if (!mqttAccess || mqttAccess.error) {
+                console.error(`MQTT auth failed: ${mqttAccess?.error || 'No response'}`);
+                return;
+            }
             const mqttToken = mqttAccess.data?.access_token;
-            if (!mqttToken) throw new Error('No access_token from MQTT API');
+            if (!mqttToken) {
+                console.error('No access_token from MQTT API');
+                return;
+            }
             log('Step 3: MQTT token received');
             const devicesResp = await this.api({
                 route: API_DEVICES,
                 authorizeToken,
                 accessToken,
             });
-            if (!devicesResp || devicesResp.error) throw new Error(`DEVICE fetch failed: ${devicesResp.error || 'No response'}`);
+            if (!devicesResp || devicesResp.error) {
+                console.error(`DEVICE fetch failed: ${devicesResp?.error || 'No response'}`);
+                return;
+            }
             const rows = devicesResp.data?.rows;
-            if (!Array.isArray(rows)) throw new Error('No device list returned');
+            if (!Array.isArray(rows)) {
+                console.error('No device list returned');
+                return;
+            }
             log(`Step 4: Found ${rows.length} devices`);
             const deviceIds: string[] = [];
             for (const device of rows) {
@@ -179,7 +203,10 @@ export class Connector {
                 this.devices[cleanId] = device;
                 deviceIds.push(cleanId);
             }
-            if (deviceIds.length === 0) throw new Error('No valid devices found');
+            if (deviceIds.length === 0) {
+                console.error('No valid devices found');
+                return;
+            }
             log('Step 5: Starting MQTT with devices:', deviceIds);
             this.getDeviceData(mqttToken, deviceIds);
         } catch (err: any) {
@@ -195,6 +222,7 @@ export class Connector {
             clean: true,
             connectTimeout: 4000,
         });
+
         this.mqttClient!.on('connect', () => {
             const topics: string[] = [];
             for (const mac of deviceMacs) {
@@ -205,6 +233,7 @@ export class Connector {
             }
             this.mqttClient?.subscribe(topics);
         });
+
         this.mqttClient!.on('message', (topic: string, message: any) => {
             const deviceMac = topic.split('/')[0];
             const arr = Object.values(new Uint8Array(message));
