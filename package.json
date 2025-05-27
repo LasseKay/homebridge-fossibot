@@ -1,7 +1,6 @@
 {
-  "name": "homebridge-fossibot-integration",
-  "displayName": "Fossibot Integration",
-  "type": "module",
+  "name": "homebridge-fossibot",
+  "displayName": "FossiBot Integration",
   "version": "1.0.0",
   "private": true,
   "description": "This plugin is a FossiBot Integration build on top of the BrightEMS API. This plugin uses this API Implementation: https://github.com/iamslan/fossibot-reverse-engineering. Tested with FossiBot F3600 Pro.",
@@ -16,6 +15,7 @@
     "url": "https://github.com/LasseKay/homebridge-fossibot/issues"
   },
   "keywords": [
+    "homebridge-plugin",
     "homebridge-fossibot"
   ],
   "main": "dist/index.js",
@@ -30,11 +30,18 @@
     "watch": "npm run build && npm link && nodemon"
   },
   "dependencies": {
-    "homebridge-lib": "^7.1.4"
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "homebridge-lib": "^7.1.4",
+    "mqtt": "^5.13.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
     "@types/node": "^22.13.5",
+    "@types/ws": "^8.18.1",
     "eslint": "^9.21.0",
     "homebridge": "^2.0.0-beta.0",
     "nodemon": "^3.1.9",
