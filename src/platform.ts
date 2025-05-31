@@ -8,7 +8,7 @@ import type {
     Service
 } from 'homebridge';
 
-const {platformAccessory} = require('./platformAccessory.js');
+const {Accessory} = require('./accessory.js');
 const {PLATFORM_NAME, PLUGIN_NAME} = require('./settings.js');
 const {Api} = require('./lib/api');
 
@@ -75,7 +75,7 @@ export class Platform implements DynamicPlatformPlugin {
                     host: this.config.host,
                     outputType: output.type,
                 };
-                new platformAccessory(this, existingAccessory);
+                new Accessory(this, existingAccessory);
             } else {
                 this.log.info('adding new accessory');
                 const accessory = new this.api.platformAccessory(output.name, uuid);
@@ -84,7 +84,7 @@ export class Platform implements DynamicPlatformPlugin {
                     host: this.config.host,
                     outputType: output.type,
                 };
-                new platformAccessory(this, accessory);
+                new Accessory(this, accessory);
                 this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
             }
             this.discoveredCacheUUIDs.push(uuid);

@@ -1,73 +1,10 @@
-/*
-import type {CharacteristicValue, PlatformAccessory, Service} from 'homebridge';
-import type {FossibotHomebridgePlatform} from './platform.js';
-import type {FossibotController as FossibotControllerType} from './controller/fossibotController';
-
-const { FossibotController } = require('./controller/fossibotController');
-
-export class FossibotPlatformAccessory {
-  private service: Service;
-  private fossilbotController: FossibotControllerType;
-
-  constructor(
-      private readonly platform: FossibotHomebridgePlatform,
-      private readonly accessory: PlatformAccessory,
-  ) {
-    const device = accessory.context.device;
-    const email = this.platform.config.email as string;
-    const password = this.platform.config.password as string;
-    const model = this.platform.config.model as string || 'device'
-    const manufactor = 'FossiBot';
-    if (!email || !password) {
-      this.platform.log.error('email and password has to be provided in config');
-      throw new Error('no email and/or password found in config');
-    }
-    this.fossilbotController = new FossibotController(device.host, device.mac, email, password);
-    this.accessory.getService(this.platform.Service.AccessoryInformation)!
-        .setCharacteristic(this.platform.Characteristic.Manufacturer, manufactor)
-        .setCharacteristic(this.platform.Characteristic.Model, model)
-        .setCharacteristic(this.platform.Characteristic.SerialNumber, device.mac);
-    this.service = this.accessory.getService(this.platform.Service.Outlet)
-        || this.accessory.addService(this.platform.Service.Outlet);
-    this.service.setCharacteristic(this.platform.Characteristic.Name, 'Fossibot Powerstation');
-    this.service.getCharacteristic(this.platform.Characteristic.On)
-        .onSet(this.setOn.bind(this))
-        .onGet(this.getOn.bind(this));
-  }
-
-  async setOn(value: CharacteristicValue) {
-    this.platform.log.debug('Fossibot setOn called with:', value);
-    try {
-      if (value) {
-        await this.fossilbotController.enableACOutput();
-      } else {
-        await this.fossilbotController.disableACOutput();
-      }
-    } catch (error) {
-      this.platform.log.error('Error setting AC Output:', error);
-      throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-    }
-  }
-
-  async getOn(): Promise<CharacteristicValue> {
-    this.platform.log.debug('Fossibot getOn called');
-    try {
-      return await this.fossilbotController.isACOutputEnabled();
-    } catch (error) {
-      this.platform.log.error('Error getting AC Output state:', error);
-      throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-    }
-  }
-}
-*/
-
 import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 import type { Platform } from './platform.js';
-import type { platformController as ControllerType } from './controller/platformController';
+import type { Controller as ControllerType } from './controller';
 
-const { platformController } = require('./controller/platformController');
+const { Controller } = require('./controller');
 
-export class platformAccessory {
+export class Accessory {
   private service: Service;
   private controller: ControllerType;
   private outputType: string;
@@ -88,7 +25,7 @@ export class platformAccessory {
       throw new Error('no email and/or password found in config');
     }
 
-    this.controller = new platformController(device.host, device.mac, email, password);
+    this.controller = new Controller(device.host, device.mac, email, password);
 
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
         .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)
@@ -151,9 +88,8 @@ export class platformAccessory {
           return false;
       }
     } catch (error) {
-      this.platform.log.error(`Error getting ${this.outputType} state:`, error);
+      this.platform.log.error(`error getting ${this.outputType} state: `, error);
       return false;
     }
   }
-
 }

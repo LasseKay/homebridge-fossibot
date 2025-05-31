@@ -1,6 +1,6 @@
-const Connector = require('../lib/connector').Connector;
+const Connector = require('./lib/connector').Connector;
 
-export class platformController {
+export class Controller {
     private connector: typeof Connector.prototype;
     private deviceId: string;
     private initialized = false;
