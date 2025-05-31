@@ -102,7 +102,7 @@ export class platformAccessory {
     this.service = this.accessory.getService(ServiceType)
         || this.accessory.addService(ServiceType);
 
-    this.service.setCharacteristic(this.platform.Characteristic.Name, `Fossibot ${this.outputType.toUpperCase()}`);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, this.outputType.toUpperCase());
 
     this.service.getCharacteristic(this.platform.Characteristic.On)
         .onSet(this.setOn.bind(this))
@@ -110,7 +110,7 @@ export class platformAccessory {
   }
 
   async setOn(value: CharacteristicValue) {
-    this.platform.log.debug(`Fossibot setOn called for ${this.outputType} with:`, value);
+    this.platform.log.debug(`setOn called for ${this.outputType} with:`, value);
     try {
       switch (this.outputType) {
         case 'ac':
@@ -126,32 +126,34 @@ export class platformAccessory {
           await (value ? this.controller.enableLED() : this.controller.disableLED());
           break;
         default:
-          throw new Error('Unknown output type');
+          throw new Error('unknown output type');
       }
     } catch (error) {
-      this.platform.log.error(`Error setting ${this.outputType} state:`, error);
+      this.platform.log.error(`error setting ${this.outputType} state:`, error);
       throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     }
   }
 
   async getOn(): Promise<CharacteristicValue> {
-    this.platform.log.debug(`Fossibot getOn called for ${this.outputType}`);
+    this.platform.log.debug(`getOn called for ${this.outputType}`);
     try {
       switch (this.outputType) {
         case 'ac':
-          return await this.controller.isACOutputEnabled();
+          return await this.controller.isACOutputEnabled() ?? false;
         case 'dc':
-          return await this.controller.isDCOutputEnabled();
+          return await this.controller.isDCOutputEnabled() ?? false;
         case 'usb':
-          return await this.controller.isUSBOutputEnabled();
+          return await this.controller.isUSBOutputEnabled() ?? false;
         case 'led':
-          return await this.controller.isLEDEnabled();
+          return await this.controller.isLEDEnabled() ?? false;
         default:
-          throw new Error('Unknown output type');
+          this.platform.log.warn(`unknown output type: ${this.outputType}`);
+          return false;
       }
     } catch (error) {
       this.platform.log.error(`Error getting ${this.outputType} state:`, error);
-      throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+      return false;
     }
   }
+
 }
