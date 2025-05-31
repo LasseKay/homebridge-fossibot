@@ -7,7 +7,7 @@ export class Controller {
 
     constructor(_host: string, macAddress: string, email: string, password: string) {
         this.connector = new Connector(email, password);
-        this.deviceId = macAddress.replace(/:/g, '').toUpperCase();
+        this.deviceId = macAddress.replace(/:/g, '');
     }
 
     async enableUSBOutput(): Promise<void> {

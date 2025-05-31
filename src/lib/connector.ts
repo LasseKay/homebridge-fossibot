@@ -191,6 +191,7 @@ export class Connector {
                 return;
             }
             const rows = devicesResp.data?.rows;
+            // console.log('TEST', rows, devicesResp)
             if (!Array.isArray(rows)) {
                 console.error('No device list returned');
                 return;
@@ -289,6 +290,8 @@ export class Connector {
     }
 
     public getDeviceById(deviceId: string): { error?: string } | any {
+        deviceId = deviceId.replace(/:/g, '');
+        // console.log('getDeviceById', this.devices, deviceId)
         if (this.devices[deviceId]) {
             return this.devices[deviceId];
         } else {
