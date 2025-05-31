@@ -1,72 +1,99 @@
-import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAccessory, PlatformConfig, Service } from 'homebridge';
-const { platformAccessory } = require('./platformAccessory.js');
-const { PLATFORM_NAME, PLUGIN_NAME } = require('./settings.js');
-const { FossibotApiServer } = require('./apiServer');
+import type {
+    API,
+    Characteristic,
+    DynamicPlatformPlugin,
+    Logging,
+    PlatformAccessory,
+    PlatformConfig,
+    Service
+} from 'homebridge';
 
-export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
-  public readonly Service: typeof Service;
-  public readonly Characteristic: typeof Characteristic;
-  public readonly accessories: Map<string, PlatformAccessory> = new Map();
-  public readonly discoveredCacheUUIDs: string[] = [];
-  private readonly serverPort: number;
-  private readonly email: string;
-  private readonly password: string;
-  private readonly apiServer;
+const {platformAccessory} = require('./platformAccessory.js');
+const {PLATFORM_NAME, PLUGIN_NAME} = require('./settings.js');
+const {FossibotApiServer} = require('./apiServer');
 
-  constructor(
-      public readonly log: Logging,
-      public readonly config: PlatformConfig,
-      public readonly api: API,
-  ) {
-    this.email = config.email;
-    this.password = config.password;
-    this.Service = api.hap.Service;
-    this.Characteristic = api.hap.Characteristic;
-    this.log.debug('finished initializing platform: ', this.config.name);
-    this.serverPort = this.config.serverPort ?? 3000;
-    this.apiServer = new FossibotApiServer(this.email, this.password);
-    this.apiServer.start(this.serverPort);
-    this.log.info(`api server started on port ${this.serverPort}`);
-    this.api.on('shutdown', () => {
-      this.apiServer.stop();
-      this.log.info('api server stopped.');
-    });
+export class Platform implements DynamicPlatformPlugin {
+    public readonly Service: typeof Service;
+    public readonly Characteristic: typeof Characteristic;
+    public readonly accessories: Map<string, PlatformAccessory> = new Map();
+    public readonly discoveredCacheUUIDs: string[] = [];
+    private readonly serverPort: number;
+    private readonly email: string;
+    private readonly password: string;
+    private readonly apiServer;
 
-    this.api.on('didFinishLaunching', () => {
-      this.log.debug('Executed didFinishLaunching callback');
-      this.discoverDevices();
-    });
-  }
+    private outputs = [
+        {name: 'USB Output', type: 'usb'},
+        {name: 'AC Output', type: 'ac'},
+        {name: 'DC Output', type: 'dc'},
+        {name: 'LED Light', type: 'led'},
+    ];
 
-  configureAccessory(accessory: PlatformAccessory) {
-    this.log.info('loading accessory from cache: ', accessory.displayName);
-    this.accessories.set(accessory.UUID, accessory);
-  }
+    constructor(
+        public readonly log: Logging,
+        public readonly config: PlatformConfig,
+        public readonly api: API,
+    ) {
+        this.email = config.email;
+        this.password = config.password;
+        this.Service = api.hap.Service;
+        this.Characteristic = api.hap.Characteristic;
+        this.log.debug('finished initializing platform: ', this.config.name);
+        this.serverPort = this.config.serverPort ?? 3000;
+        this.apiServer = new FossibotApiServer(this.email, this.password);
+        this.apiServer.start(this.serverPort);
+        this.log.info(`api server started on port ${this.serverPort}`);
+        this.api.on('shutdown', () => {
+            this.apiServer.stop();
+            this.log.info('api server stopped.');
+        });
 
-  discoverDevices() {
-    const mac = this.config.mac as string;
-    if (!mac) {
-      this.log.error('device mac address missing in config!');
-      return;
+        this.api.on('didFinishLaunching', () => {
+            this.log.debug('Executed didFinishLaunching callback');
+            this.discoverDevices();
+        });
     }
-    const uuid = this.api.hap.uuid.generate(mac);
-    const existingAccessory = this.accessories.get(uuid);
-    if (existingAccessory) {
-      this.log.info('restoring existing accessory from cache: ', existingAccessory.displayName);
-      new platformAccessory(this, existingAccessory);
-    } else {
-      this.log.info('adding new accessory');
-      const accessory = new this.api.platformAccessory('AC Output', uuid);
-      accessory.context.device = { mac };
-      new platformAccessory(this, accessory);
-      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+
+    configureAccessory(accessory: PlatformAccessory) {
+        this.log.info('loading accessory from cache: ', accessory.displayName);
+        this.accessories.set(accessory.UUID, accessory);
     }
-    this.discoveredCacheUUIDs.push(uuid);
-    for (const [uuid, accessory] of this.accessories) {
-      if (!this.discoveredCacheUUIDs.includes(uuid)) {
-        this.log.info('removing accessory from cache: ', accessory.displayName);
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-      }
+
+    discoverDevices() {
+        const mac = this.config.mac as string;
+        if (!mac) {
+            this.log.error('device mac address missing in config!');
+            return;
+        }
+        this.outputs.forEach(output => {
+            const uuid = this.api.hap.uuid.generate(`${mac}-${output.type}`);
+            const existingAccessory = this.accessories.get(uuid);
+            if (existingAccessory) {
+                this.log.info('restoring existing accessory from cache: ', existingAccessory.displayName);
+                existingAccessory.context.device = {
+                    mac,
+                    host: this.config.host,
+                    outputType: output.type,
+                };
+                new platformAccessory(this, existingAccessory);
+            } else {
+                this.log.info('adding new accessory');
+                const accessory = new this.api.platformAccessory(output.name, uuid);
+                accessory.context.device = {
+                    mac,
+                    host: this.config.host,
+                    outputType: output.type,
+                };
+                new platformAccessory(this, accessory);
+                this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+            }
+            this.discoveredCacheUUIDs.push(uuid);
+        });
+        for (const [uuid, accessory] of this.accessories) {
+            if (!this.discoveredCacheUUIDs.includes(uuid)) {
+                this.log.info('removing accessory from cache: ', accessory.displayName);
+                this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+            }
+        }
     }
-  }
 }

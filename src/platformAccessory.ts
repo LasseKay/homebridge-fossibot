@@ -62,7 +62,7 @@ export class FossibotPlatformAccessory {
 */
 
 import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
-import type { FossibotHomebridgePlatform } from './platform.js';
+import type { Platform } from './platform.js';
 import type { platformController as ControllerType } from './controller/platformController';
 
 const { platformController } = require('./controller/platformController');
@@ -73,7 +73,7 @@ export class platformAccessory {
   private outputType: string;
 
   constructor(
-      private readonly platform: FossibotHomebridgePlatform,
+      private readonly platform: Platform,
       private readonly accessory: PlatformAccessory,
   ) {
     const device = accessory.context.device;
