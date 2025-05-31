@@ -24,8 +24,8 @@ export class FossibotPlatformAccessory {
         .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Fossibot')
         .setCharacteristic(this.platform.Characteristic.Model, 'Powerstation')
         .setCharacteristic(this.platform.Characteristic.SerialNumber, device.mac);
-    this.service = this.accessory.getService(this.platform.Service.Lightbulb)
-        || this.accessory.addService(this.platform.Service.Lightbulb);
+    this.service = this.accessory.getService(this.platform.Service.Outlet)
+        || this.accessory.addService(this.platform.Service.Outlet);
     this.service.setCharacteristic(this.platform.Characteristic.Name, 'Fossibot Powerstation');
     this.service.getCharacteristic(this.platform.Characteristic.On)
         .onSet(this.setOn.bind(this))
