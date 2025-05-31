@@ -1,5 +1,5 @@
 import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAccessory, PlatformConfig, Service } from 'homebridge';
-const { FossibotPlatformAccessory } = require('./platformAccessory.js');
+const { platformAccessory } = require('./platformAccessory.js');
 const { PLATFORM_NAME, PLUGIN_NAME } = require('./settings.js');
 const { FossibotApiServer } = require('./apiServer');
 
@@ -53,12 +53,12 @@ export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
     const existingAccessory = this.accessories.get(uuid);
     if (existingAccessory) {
       this.log.info('restoring existing accessory from cache: ', existingAccessory.displayName);
-      new FossibotPlatformAccessory(this, existingAccessory);
+      new platformAccessory(this, existingAccessory);
     } else {
       this.log.info('adding new accessory');
       const accessory = new this.api.platformAccessory('AC Output', uuid);
       accessory.context.device = { mac };
-      new FossibotPlatformAccessory(this, accessory);
+      new platformAccessory(this, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
     this.discoveredCacheUUIDs.push(uuid);

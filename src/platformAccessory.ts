@@ -63,13 +63,13 @@ export class FossibotPlatformAccessory {
 
 import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 import type { FossibotHomebridgePlatform } from './platform.js';
-import type { FossibotController as FossibotControllerType } from './controller/fossibotController';
+import type { platformController as ControllerType } from './controller/platformController';
 
-const { FossibotController } = require('./controller/fossibotController');
+const { platformController } = require('./controller/platformController');
 
-export class FossibotPlatformAccessory {
+export class platformAccessory {
   private service: Service;
-  private fossilbotController: FossibotControllerType;
+  private controller: ControllerType;
   private outputType: string;
 
   constructor(
@@ -81,17 +81,17 @@ export class FossibotPlatformAccessory {
     const email = this.platform.config.email as string;
     const password = this.platform.config.password as string;
     const model = this.platform.config.model as string || 'device';
-    const manufactor = 'FossiBot';
+    const manufacturer = 'FossiBot';
 
     if (!email || !password) {
       this.platform.log.error('email and password has to be provided in config');
       throw new Error('no email and/or password found in config');
     }
 
-    this.fossilbotController = new FossibotController(device.host, device.mac, email, password);
+    this.controller = new platformController(device.host, device.mac, email, password);
 
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
-        .setCharacteristic(this.platform.Characteristic.Manufacturer, manufactor)
+        .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)
         .setCharacteristic(this.platform.Characteristic.Model, model)
         .setCharacteristic(this.platform.Characteristic.SerialNumber, device.mac);
 
@@ -114,16 +114,16 @@ export class FossibotPlatformAccessory {
     try {
       switch (this.outputType) {
         case 'ac':
-          await (value ? this.fossilbotController.enableACOutput() : this.fossilbotController.disableACOutput());
+          await (value ? this.controller.enableACOutput() : this.controller.disableACOutput());
           break;
         case 'dc':
-          await (value ? this.fossilbotController.enableDCOutput() : this.fossilbotController.disableDCOutput());
+          await (value ? this.controller.enableDCOutput() : this.controller.disableDCOutput());
           break;
         case 'usb':
-          await (value ? this.fossilbotController.enableUSBOutput() : this.fossilbotController.disableUSBOutput());
+          await (value ? this.controller.enableUSBOutput() : this.controller.disableUSBOutput());
           break;
         case 'led':
-          await (value ? this.fossilbotController.enableLED() : this.fossilbotController.disableLED());
+          await (value ? this.controller.enableLED() : this.controller.disableLED());
           break;
         default:
           throw new Error('Unknown output type');
@@ -139,13 +139,13 @@ export class FossibotPlatformAccessory {
     try {
       switch (this.outputType) {
         case 'ac':
-          return await this.fossilbotController.isACOutputEnabled();
+          return await this.controller.isACOutputEnabled();
         case 'dc':
-          return await this.fossilbotController.isDCOutputEnabled();
+          return await this.controller.isDCOutputEnabled();
         case 'usb':
-          return await this.fossilbotController.isUSBOutputEnabled();
+          return await this.controller.isUSBOutputEnabled();
         case 'led':
-          return await this.fossilbotController.isLEDEnabled();
+          return await this.controller.isLEDEnabled();
         default:
           throw new Error('Unknown output type');
       }

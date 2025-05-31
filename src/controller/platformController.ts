@@ -1,6 +1,6 @@
 const Connector = require('../lib/connector').Connector;
 
-export class FossibotController {
+export class platformController {
     private connector: typeof Connector.prototype;
     private deviceId: string;
     private initialized = false;
