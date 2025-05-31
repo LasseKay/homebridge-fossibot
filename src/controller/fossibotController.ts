@@ -10,13 +10,6 @@ export class FossibotController {
         this.deviceId = macAddress.replace(/:/g, '').toUpperCase();
     }
 
-    private async init(): Promise<void> {
-        if (!this.initialized) {
-            await this.connector.connect();
-            this.initialized = true;
-        }
-    }
-
     async enableACOutput(): Promise<void> {
         await this.init();
         const result = await this.connector.runCommand(this.deviceId, 'REGEnableACOutput');
@@ -35,4 +28,48 @@ export class FossibotController {
         if (device.error) throw new Error(device.error);
         return !!device.acOutput;
     }
+
+    async enableUSBOutput() {
+        // Implementierung zum Aktivieren des USB-Ausgangs
+    }
+
+    async  disableUSBOutput() {
+        // Implementierung zum Deaktivieren des USB-Ausgangs
+    }
+
+    async  isUSBOutputEnabled() {
+        // Implementierung zum Überprüfen des USB-Ausgangs
+    }
+
+     async  enableDCOutput() {
+        // Implementierung zum Aktivieren des DC-Ausgangs
+    }
+
+     async  disableDCOutput() {
+        // Implementierung zum Deaktivieren des DC-Ausgangs
+    }
+
+    async  isDCOutputEnabled() {
+        // Implementierung zum Überprüfen des DC-Ausgangs
+    }
+
+     async enableLED() {
+        // Implementierung zum Aktivieren der LED (nur dauerhaft an)
+    }
+
+     async  disableLED() {
+        // Implementierung zum Deaktivieren der LED
+    }
+
+    async  isLEDEnabled() {
+        // Implementierung zum Überprüfen des LED Lichts (nur ob an oder aus)
+    }
+
+    private async init(): Promise<void> {
+        if (!this.initialized) {
+            await this.connector.connect();
+            this.initialized = true;
+        }
+    }
+
 }
