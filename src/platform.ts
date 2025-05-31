@@ -13,7 +13,6 @@ export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
   private readonly password: string;
   private readonly apiServer;
 
-
   constructor(
       public readonly log: Logging,
       public readonly config: PlatformConfig,
@@ -23,14 +22,14 @@ export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
     this.password = config.password;
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
-    this.log.debug('Finished initializing platform:', this.config.name);
+    this.log.debug('finished initializing platform: ', this.config.name);
     this.serverPort = this.config.serverPort ?? 3000;
     this.apiServer = new FossibotApiServer(this.email, this.password);
     this.apiServer.start(this.serverPort);
-    this.log.info(`Fossibot API-Server gestartet auf Port ${this.serverPort}`);
+    this.log.info(`api server started on port ${this.serverPort}`);
     this.api.on('shutdown', () => {
       this.apiServer.stop();
-      this.log.info('Fossibot API-Server wurde gestoppt.');
+      this.log.info('api server stopped.');
     });
 
     this.api.on('didFinishLaunching', () => {
@@ -40,24 +39,24 @@ export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
+    this.log.info('loading accessory from cache: ', accessory.displayName);
     this.accessories.set(accessory.UUID, accessory);
   }
 
   discoverDevices() {
     const mac = this.config.mac as string;
     if (!mac) {
-      this.log.error('Fossibot host or mac address missing in config!');
+      this.log.error('device mac address missing in config!');
       return;
     }
     const uuid = this.api.hap.uuid.generate(mac);
     const existingAccessory = this.accessories.get(uuid);
     if (existingAccessory) {
-      this.log.info('Restoring existing Fossibot accessory from cache:', existingAccessory.displayName);
+      this.log.info('restoring existing accessory from cache: ', existingAccessory.displayName);
       new FossibotPlatformAccessory(this, existingAccessory);
     } else {
-      this.log.info('Adding new Fossibot accessory');
-      const accessory = new this.api.platformAccessory('Fossibot Powerstation', uuid);
+      this.log.info('adding new accessory');
+      const accessory = new this.api.platformAccessory('AC Output', uuid);
       accessory.context.device = { mac };
       new FossibotPlatformAccessory(this, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -65,7 +64,7 @@ export class FossibotHomebridgePlatform implements DynamicPlatformPlugin {
     this.discoveredCacheUUIDs.push(uuid);
     for (const [uuid, accessory] of this.accessories) {
       if (!this.discoveredCacheUUIDs.includes(uuid)) {
-        this.log.info('Removing accessory from cache:', accessory.displayName);
+        this.log.info('removing accessory from cache: ', accessory.displayName);
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }

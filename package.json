@@ -27,7 +27,8 @@
     "build": "rimraf ./dist && tsc",
     "lint": "eslint . --max-warnings=0",
     "prepublishOnly": "npm run lint && npm run build",
-    "watch": "npm run build && npm link && nodemon"
+    "watch": "npm run build && npm link && nodemon",
+    "dev build": "npm run build && npm link"
   },
   "dependencies": {
     "axios": "^1.9.0",

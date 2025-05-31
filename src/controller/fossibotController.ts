@@ -10,6 +10,25 @@ export class FossibotController {
         this.deviceId = macAddress.replace(/:/g, '').toUpperCase();
     }
 
+    async enableUSBOutput(): Promise<void> {
+        await this.init();
+        const result = await this.connector.runCommand(this.deviceId, 'REGEnableUSBOutput');
+        if (result.error) throw new Error(result.error);
+    }
+
+    async disableUSBOutput() {
+        await this.init();
+        const result = await this.connector.runCommand(this.deviceId, 'REGDisableUSBOutput');
+        if (result.error) throw new Error(result.error);
+    }
+
+    async isUSBOutputEnabled(): Promise<boolean> {
+        await this.init();
+        const device = this.connector.getDeviceById(this.deviceId);
+        if (device.error) throw new Error(device.error);
+        return !!device.usbOutput
+    }
+
     async enableACOutput(): Promise<void> {
         await this.init();
         const result = await this.connector.runCommand(this.deviceId, 'REGEnableACOutput');
@@ -29,40 +48,42 @@ export class FossibotController {
         return !!device.acOutput;
     }
 
-    async enableUSBOutput() {
-        // Implementierung zum Aktivieren des USB-Ausgangs
+     async enableDCOutput(): Promise<void> {
+         await this.init();
+         const result = await this.connector.runCommand(this.deviceId, 'REGEnableDCOutput');
+         if (result.error) throw new Error(result.error);
     }
 
-    async  disableUSBOutput() {
-        // Implementierung zum Deaktivieren des USB-Ausgangs
+     async disableDCOutput(): Promise<void> {
+         await this.init();
+         const result = await this.connector.runCommand(this.deviceId, 'REGDisableDCOutput');
+         if (result.error) throw new Error(result.error);
     }
 
-    async  isUSBOutputEnabled() {
-        // Implementierung zum Überprüfen des USB-Ausgangs
+    async isDCOutputEnabled(): Promise<boolean> {
+        await this.init();
+        const device = this.connector.getDeviceById(this.deviceId);
+        if (device.error) throw new Error(device.error);
+        return !!device.dcOutput;
     }
 
-     async  enableDCOutput() {
-        // Implementierung zum Aktivieren des DC-Ausgangs
+     async enableLED(): Promise<void> {
+         await this.init();
+         const result = await this.connector.runCommand(this.deviceId, 'REGEnableLEDAlways');
+         if (result.error) throw new Error(result.error);
     }
 
-     async  disableDCOutput() {
-        // Implementierung zum Deaktivieren des DC-Ausgangs
+     async disableLED(): Promise<void> {
+         await this.init();
+         const result = await this.connector.runCommand(this.deviceId, 'REGDisableLED');
+         if (result.error) throw new Error(result.error);
     }
 
-    async  isDCOutputEnabled() {
-        // Implementierung zum Überprüfen des DC-Ausgangs
-    }
-
-     async enableLED() {
-        // Implementierung zum Aktivieren der LED (nur dauerhaft an)
-    }
-
-     async  disableLED() {
-        // Implementierung zum Deaktivieren der LED
-    }
-
-    async  isLEDEnabled() {
-        // Implementierung zum Überprüfen des LED Lichts (nur ob an oder aus)
+    async isLEDEnabled(): Promise<boolean> {
+        await this.init();
+        const device = this.connector.getDeviceById(this.deviceId);
+        if (device.error) throw new Error(device.error);
+        return !!device.ledOutput;
     }
 
     private async init(): Promise<void> {
