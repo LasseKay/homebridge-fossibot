@@ -139,13 +139,13 @@ export class platformAccessory {
     try {
       switch (this.outputType) {
         case 'ac':
-          return await this.controller.isACOutputEnabled() ?? false;
+          return (await this.controller.isACOutputEnabled()) ?? false;
         case 'dc':
-          return await this.controller.isDCOutputEnabled() ?? false;
+          return (await this.controller.isDCOutputEnabled()) ?? false;
         case 'usb':
-          return await this.controller.isUSBOutputEnabled() ?? false;
+          return (await this.controller.isUSBOutputEnabled()) ?? false;
         case 'led':
-          return await this.controller.isLEDEnabled() ?? false;
+          return (await this.controller.isLEDEnabled()) ?? false;
         default:
           this.platform.log.warn(`unknown output type: ${this.outputType}`);
           return false;
