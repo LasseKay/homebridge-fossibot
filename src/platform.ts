@@ -10,7 +10,7 @@ import type {
 
 const {platformAccessory} = require('./platformAccessory.js');
 const {PLATFORM_NAME, PLUGIN_NAME} = require('./settings.js');
-const {FossibotApiServer} = require('./apiServer');
+const {Api} = require('./lib/api');
 
 export class Platform implements DynamicPlatformPlugin {
     public readonly Service: typeof Service;
@@ -40,7 +40,7 @@ export class Platform implements DynamicPlatformPlugin {
         this.Characteristic = api.hap.Characteristic;
         this.log.debug('finished initializing platform: ', this.config.name);
         this.serverPort = this.config.serverPort ?? 3000;
-        this.apiServer = new FossibotApiServer(this.email, this.password);
+        this.apiServer = new Api(this.email, this.password);
         this.apiServer.start(this.serverPort);
         this.log.info(`api server started on port ${this.serverPort}`);
         this.api.on('shutdown', () => {

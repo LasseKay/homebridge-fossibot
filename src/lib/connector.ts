@@ -216,7 +216,7 @@ export class Connector {
 
     private getDeviceData(accessToken: string, deviceMacs: string[]): void {
         this.mqttClient = mqtt.connect(mqttHost, {
-            clientId: _username,
+            clientId: _username + Math.random().toString(16).slice(2, 10),
             username: accessToken,
             password: _password,
             clean: true,

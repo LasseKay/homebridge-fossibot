@@ -15,7 +15,7 @@ interface DeviceState {
     [key: string]: boolean;
 }
 
-export class FossibotApiServer {
+export class Api {
     private app = express();
     private server?: Server;
     private devices: Record<string, DeviceState> = {};
