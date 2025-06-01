@@ -194,7 +194,6 @@ export class Connector {
             throw new Error(`DEVICE fetch failed: ${devicesResp?.error || 'No response'}`);
         }
         const rows = devicesResp.data?.rows;
-        console.log('rows', rows)
         if (!Array.isArray(rows)) {
             console.error('No device list returned');
             throw new Error('No device list returned');
