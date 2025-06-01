@@ -312,6 +312,7 @@ export class Connector {
         success?: string;
         error?: string
     }> {
+        console.log('runComand', deviceId, command, value)
         if (!REGISTERS[command]) {
             return {error: 'Command not found'};
         }

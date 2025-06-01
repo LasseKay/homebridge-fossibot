@@ -68,8 +68,8 @@ export class Api {
     }
 
     private setDeviceState(deviceId: string, key: string, value: boolean) {
+        console.log('setDeviceState', deviceId, key, value)
         const devices = this.devices$.getValue();
-        console.log('devices1', devices)
         if (!devices[deviceId]) {
             devices[deviceId] = {
                 acOutput: false,
@@ -85,8 +85,6 @@ export class Api {
         this.devices$.next({
             ...devices,
         });
-        const devices2 = this.devices$.getValue();
-        console.log('devices2', devices2)
     }
 
     public start(port: number) {
