@@ -1,9 +1,8 @@
-import type {Connector} from './lib/connector';
+import type {Connector} from './connector';
 
 export class Controller {
     private connector: Connector;
-    private deviceId: string;
-    private initialized = false;
+    private readonly deviceId: string;
 
     constructor(_host: string, macAddress: string, connector: Connector) {
         this.connector = connector;

@@ -2,25 +2,19 @@ import type expressType from 'express';
 import type corsType from 'cors';
 import type bodyParserType from 'body-parser';
 import type { Server } from 'http';
+import type {Connector} from '../connector';
 
 const express: typeof expressType = require('express');
 const cors: typeof corsType = require('cors');
 const bodyParser: typeof bodyParserType = require('body-parser');
 
-interface DeviceState {
-    acOutput: boolean;
-    dcOutput: boolean;
-    inverter: boolean;
-    ledState: boolean;
-    [key: string]: boolean;
-}
-
 export class Api {
     private app = express();
     private server?: Server;
-    private devices: Record<string, DeviceState> = {};
+    private readonly devices: Record<string, DeviceState> = {};
 
-    constructor() {
+    constructor(connector: Connector) {
+        this.devices = connector.devices
         this.app.use(cors());
         this.app.use(bodyParser.json());
         this.setupRoutes();

@@ -7,9 +7,9 @@ import type {
     PlatformConfig,
     Service
 } from 'homebridge';
-import type {Connector as ConnectorType} from "./lib/connector";
+import type {Connector as ConnectorType} from "./connector";
 
-const Connector = require('./lib/connector').Connector;
+const Connector = require('./connector').Connector;
 const {retry} = require('./utils/retry')
 const {Accessory} = require('./accessory.js');
 const {PLATFORM_NAME, PLUGIN_NAME} = require('./settings.js');

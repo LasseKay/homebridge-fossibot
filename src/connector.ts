@@ -1,7 +1,7 @@
 import type { MqttClient } from 'mqtt';
-const REGISTERS = require('./registers');
-const { sign, highLowToInt } = require('./functions');
-const { retry } = require('../utils/retry');
+const REGISTERS = require('./lib/registers');
+const { sign, highLowToInt } = require('./lib/functions');
+const { retry } = require('./utils/retry');
 
 const DEBUG = true;
 
@@ -31,7 +31,7 @@ export class Connector {
     private username = '';
     private password = '';
     private mqttClient: MqttClient | null = null;
-    public devices: Record<string, any> = {};
+    public devices: Record<string, DeviceState> = {};
 
     constructor(username: string, password: string) {
         this.username = username;
