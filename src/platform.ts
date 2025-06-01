@@ -9,6 +9,8 @@ import type {
 } from 'homebridge';
 import type {Connector as ConnectorType} from "./connector";
 
+const rxjs = require('rxjs');
+const BehaviorSubject: typeof import('rxjs').BehaviorSubject = rxjs.BehaviorSubject;
 const Connector = require('./connector').Connector;
 const {retry} = require('./utils/retry')
 const {Accessory} = require('./accessory.js');
@@ -19,6 +21,7 @@ export class Platform implements DynamicPlatformPlugin {
     public readonly Service: typeof Service;
     public readonly Characteristic: typeof Characteristic;
     public readonly accessories: Map<string, PlatformAccessory> = new Map();
+    private devices$ = new BehaviorSubject<Record<string, DeviceState>>({});
     public readonly discoveredCacheUUIDs: string[] = [];
     public readonly connector: ConnectorType;
     private readonly serverPort: number;
@@ -44,10 +47,10 @@ export class Platform implements DynamicPlatformPlugin {
         this.Characteristic = api.hap.Characteristic;
         this.log.debug('finished initializing platform: ', this.config.name);
         this.serverPort = this.config.serverPort ?? 3000;
-        this.apiServer = new Api(this.email, this.password);
+        this.connector = new Connector(config.email, config.password, this.devices$)
+        this.apiServer = new Api(this.connector, this.devices$);
         this.apiServer.start(this.serverPort);
         this.log.info(`api server started on port ${this.serverPort}`);
-        this.connector = new Connector(config.email, config.password)
 
         this.api.on('shutdown', () => {
             this.apiServer.stop();
