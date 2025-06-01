@@ -20,7 +20,7 @@ export class Platform implements DynamicPlatformPlugin {
     public readonly Characteristic: typeof Characteristic;
     public readonly accessories: Map<string, PlatformAccessory> = new Map();
     public readonly discoveredCacheUUIDs: string[] = [];
-    private readonly connector: ConnectorType;
+    public readonly connector: ConnectorType;
     private readonly serverPort: number;
     private readonly email: string;
     private readonly password: string;

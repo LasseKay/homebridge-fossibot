@@ -25,7 +25,7 @@ export class Accessory {
       throw new Error('no email and/or password found in config');
     }
 
-    this.controller = new Controller(device.host, device.mac, email, password);
+    this.controller = new Controller(device.host, device.mac, this.platform.connector);
 
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
         .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)

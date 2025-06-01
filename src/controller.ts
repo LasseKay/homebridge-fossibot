@@ -5,7 +5,7 @@ export class Controller {
     private deviceId: string;
     private initialized = false;
 
-    constructor(_host: string, macAddress: string, email: string, password: string, connector: Connector) {
+    constructor(_host: string, macAddress: string, connector: Connector) {
         this.connector = connector;
         this.deviceId = macAddress.replace(/:/g, '');
     }
