@@ -7,7 +7,10 @@ import type {
     PlatformConfig,
     Service
 } from 'homebridge';
+import type {Connector as ConnectorType} from "./lib/connector";
 
+const Connector = require('./lib/connector').Connector;
+const {retry} = require('./utils/retry')
 const {Accessory} = require('./accessory.js');
 const {PLATFORM_NAME, PLUGIN_NAME} = require('./settings.js');
 const {Api} = require('./lib/api');
@@ -17,6 +20,7 @@ export class Platform implements DynamicPlatformPlugin {
     public readonly Characteristic: typeof Characteristic;
     public readonly accessories: Map<string, PlatformAccessory> = new Map();
     public readonly discoveredCacheUUIDs: string[] = [];
+    private readonly connector: ConnectorType;
     private readonly serverPort: number;
     private readonly email: string;
     private readonly password: string;
@@ -43,6 +47,10 @@ export class Platform implements DynamicPlatformPlugin {
         this.apiServer = new Api(this.email, this.password);
         this.apiServer.start(this.serverPort);
         this.log.info(`api server started on port ${this.serverPort}`);
+        this.connector = new Connector(config.email, config.password)
+
+        retry(() => this.connector.connect()).then(() => console.log('successfully connected with API server'))
+
         this.api.on('shutdown', () => {
             this.apiServer.stop();
             this.log.info('api server stopped.');
