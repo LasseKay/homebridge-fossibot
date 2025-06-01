@@ -1,6 +1,7 @@
 import type { MqttClient } from 'mqtt';
 const REGISTERS = require('./registers');
 const { sign, highLowToInt } = require('./functions');
+const { retry } = require('../utils/retry');
 
 const DEBUG = true;
 
@@ -126,28 +127,27 @@ export class Connector {
             timestamp: Date.now(),
         };
         if (config.authorizeToken) data.token = config.authorizeToken;
-        const response = await axios.post(endpoint, data, {
+        const response = await retry(() => axios.post(endpoint, data, {
             headers: {
                 'Content-Type': 'application/json',
                 'x-serverless-sign': sign(data, clientSecret),
                 'user-agent': deviceUserAgent,
             },
-        });
+        }));
         return response.data;
     }
 
     public async connect(): Promise<void> {
         const log = (...args: any[]) => DEBUG && console.debug('[CONNECT]', ...args);
-        try {
             const auth = await this.api({ route: API_AUTH });
             if (!auth?.data?.accessToken) {
                 console.error(`AUTH failed: ${auth?.error || 'No response'}`);
-                return;
+                throw new Error(`AUTH failed: ${auth?.error || 'No response'}`)
             }
             const authorizeToken = auth.data?.accessToken;
             if (!authorizeToken) {
                 console.error('No access token from AUTH');
-                return;
+                throw new Error('No access token from AUTH');
             }
             log('Step 1: AUTH success');
             const login = await this.api({
@@ -158,12 +158,12 @@ export class Connector {
             });
             if (!login?.data?.token) {
                 console.error(`LOGIN failed: ${login.data?.errMsg || login.data?.msg || 'No response'}`);
-                return;
+                throw new Error(`LOGIN failed: ${login.data?.errMsg || login.data?.msg || 'No response'}`);
             }
             const accessToken = login.data?.token;
             if (!accessToken) {
                 console.error('No token from LOGIN');
-                return;
+                throw new Error('No token from LOGIN');
             }
             log('Step 2: LOGIN success');
             const mqttAccess = await this.api({
@@ -173,12 +173,12 @@ export class Connector {
             });
             if (!mqttAccess || mqttAccess.error) {
                 console.error(`MQTT auth failed: ${mqttAccess?.error || 'No response'}`);
-                return;
+                throw new Error(`MQTT auth failed: ${mqttAccess?.error || 'No response'}`);
             }
             const mqttToken = mqttAccess.data?.access_token;
             if (!mqttToken) {
                 console.error('No access_token from MQTT API');
-                return;
+                throw new Error('No access_token from MQTT API');
             }
             log('Step 3: MQTT token received');
             const devicesResp = await this.api({
@@ -188,13 +188,12 @@ export class Connector {
             });
             if (!devicesResp || devicesResp.error) {
                 console.error(`DEVICE fetch failed: ${devicesResp?.error || 'No response'}`);
-                return;
+                throw new Error(`DEVICE fetch failed: ${devicesResp?.error || 'No response'}`);
             }
             const rows = devicesResp.data?.rows;
-            // console.log('TEST', rows, devicesResp)
             if (!Array.isArray(rows)) {
                 console.error('No device list returned');
-                return;
+                throw new Error('No device list returned');
             }
             log(`Step 4: Found ${rows.length} devices`);
             const deviceIds: string[] = [];
@@ -206,13 +205,10 @@ export class Connector {
             }
             if (deviceIds.length === 0) {
                 console.error('No valid devices found');
-                return;
+                throw new Error('No valid devices found');
             }
             log('Step 5: Starting MQTT with devices:', deviceIds);
             this.getDeviceData(mqttToken, deviceIds);
-        } catch (err: any) {
-            console.error('Connection failed:', err?.message || err);
-        }
     }
 
     private getDeviceData(accessToken: string, deviceMacs: string[]): void {
@@ -291,7 +287,6 @@ export class Connector {
 
     public getDeviceById(deviceId: string): { error?: string } | any {
         deviceId = deviceId.replace(/:/g, '');
-        // console.log('getDeviceById', this.devices, deviceId)
         if (this.devices[deviceId]) {
             return this.devices[deviceId];
         } else {

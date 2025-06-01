@@ -1,4 +1,5 @@
 const Connector = require('./lib/connector').Connector;
+const { retry } = require('./utils/retry')
 
 export class Controller {
     private connector: typeof Connector.prototype;
@@ -88,7 +89,7 @@ export class Controller {
 
     private async init(): Promise<void> {
         if (!this.initialized) {
-            await this.connector.connect();
+            await retry(() => this.connector.connect());
             this.initialized = true;
         }
     }
