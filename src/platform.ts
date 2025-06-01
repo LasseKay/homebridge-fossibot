@@ -49,16 +49,14 @@ export class Platform implements DynamicPlatformPlugin {
         this.log.info(`api server started on port ${this.serverPort}`);
         this.connector = new Connector(config.email, config.password)
 
-        retry(() => this.connector.connect()).then(() => console.log('successfully connected with API server'))
-
         this.api.on('shutdown', () => {
             this.apiServer.stop();
             this.log.info('api server stopped.');
         });
 
-        this.api.on('didFinishLaunching', () => {
+        this.api.on('didFinishLaunching', async () => {
             this.log.debug('Executed didFinishLaunching callback');
-            this.discoverDevices();
+            await this.discoverDevices();
         });
     }
 
@@ -67,7 +65,9 @@ export class Platform implements DynamicPlatformPlugin {
         this.accessories.set(accessory.UUID, accessory);
     }
 
-    discoverDevices() {
+    async discoverDevices() {
+        await retry(() => this.connector.connect())
+        console.log('successfully connected with api server')
         const mac = this.config.mac as string;
         if (!mac) {
             this.log.error('device mac address missing in config!');
